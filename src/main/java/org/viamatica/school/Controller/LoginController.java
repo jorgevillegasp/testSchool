@@ -17,7 +17,7 @@ public class LoginController {
     @Inject
     LoginService loginService;
 
-    @Path("/validation")
+    @Path("")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.APPLICATION_JSON)

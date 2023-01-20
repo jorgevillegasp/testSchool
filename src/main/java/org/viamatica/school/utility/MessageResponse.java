@@ -12,5 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class MessageResponse {
     private String message;
-    //private List<Object> data;
+    private Object data;
+
+
 }

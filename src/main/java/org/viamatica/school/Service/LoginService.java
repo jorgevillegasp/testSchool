@@ -29,30 +29,29 @@ public class LoginService {
     Token tokenJwt;
 
 
-
+    /**
+     * login():
+     * Funcion de validacion de mi usuario
+     *
+     * @param user
+     * @param pass
+     * @return
+     * @throws String: token
+     */
 
     @Transactional
     public String login(String user, String pass ) throws SQLException {
-
         String output = "";
+        User user123 = userRepository.find("userName = ?1 and userPassword = ?2", user, pass).firstResult();
 
-        StoredProcedureQuery query = em.createStoredProcedureQuery("spLogin");
-        query.registerStoredProcedureParameter(1, String.class, ParameterMode.IN);
-        query.registerStoredProcedureParameter(2, String.class, ParameterMode.IN);
-
-        query.setParameter(1,user );
-        query.setParameter(2, pass);
-
-        if(query.execute())
-        {
-            List o= query.getResultList();
-           if(o.size()>0)
-           {
-               Gson gson= new Gson();
-               String token = gson.toJson(o.get(0));
-               output = tokenJwt.generateToken(token);
-           }
+        if(user123 == null){
+            return output;
         }
+
+        Gson gson= new Gson();
+        String token = gson.toJson(user123);
+        output = tokenJwt.generateToken(token);
+
         return output;
     }
 }

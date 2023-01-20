@@ -10,9 +10,10 @@ import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 
-@Path("/v1")
+@Path("/course")
 public class CourseController {
 
     @Inject
@@ -25,11 +26,16 @@ public class CourseController {
      * @return Course
      */
     //Obtener todos los registros
-    @Path("course")
+    @Path("")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Course> getAllCourse() {
-        return courseService.findAll();
+    public Response getAllCourse( @HeaderParam("token") String token) {
+        List<Course> courses =  courseService.findAll(token);
+        if(courses == null){
+            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("Consulta fallida",null)).build();
+        }
+        return Response.status(HttpStatus.SC_CREATED).entity(new MessageResponse("Consulta exitosa", courses)).build();
+
     }
 
     //Obtener por ID
@@ -40,10 +46,16 @@ public class CourseController {
      * @return Course
      */
     @GET
-    @Path("/course/{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Course getCourseById(@PathParam("id") Integer id) {
-        return courseService.getCourseById(id);
+    public Response getCourseById(@PathParam("id") Integer id, @HeaderParam("token") String token) {
+
+        Course course = courseService.getCourseById(id);
+        if(course == null){
+            return  Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("No se encontro el curso",null)).build();
+        }
+        return Response.status(HttpStatus.SC_OK).entity(new MessageResponse("OK",course)).build();
+
     }
 
     //Create
@@ -57,21 +69,14 @@ public class CourseController {
     @POST
     @Path("/create")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createCourseById(Course course,@HeaderParam("key") String token) {
-
-        if(course.getTitle().length() >= 100){
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("El titulo es muy largo")).build();
-        }
-        if(course.getTitle().length() >= 250){
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("La descripcion es muy larga")).build();
-        }
+    public Response createCourseById(Course course,@HeaderParam("token") String token) {
 
         String res =  courseService.saveCourse(course,token);
 
         if(res.equals("ok")){
-            return Response.status(HttpStatus.SC_CREATED).entity(new MessageResponse("Guardado con exito")).build();
+            return Response.status(HttpStatus.SC_CREATED).entity(new MessageResponse("Guardado con exito",null)).build();
         }else{
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("No se pudo guardar el curso")).build();
+            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse(res,null)).build();
         }
     }
 
@@ -84,22 +89,15 @@ public class CourseController {
      * @return mensaje
      */
     @POST
-    @Path("/course/update")
+    @Path("/update")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateCourseById(Course course,String token) {
-
-        if(course.getTitle().length() >= 100){
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("El titulo es muy largo")).build();
-        }
-        if(course.getTitle().length() >= 250){
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse("La descripcion es muy larga")).build();
-        }
+    public Response updateCourseById(Course course,@HeaderParam("token") String token) {
 
         String res =  courseService.updateCourse(course,token);
         if(res.equals("ok")){
-            return Response.status(HttpStatus.SC_CREATED).entity(new MessageResponse("Se actualizo con exito")).build();
+            return Response.status(HttpStatus.SC_CREATED).entity(new MessageResponse("Se actualizo con exito",null)).build();
         }else{
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse(res)).build();
+            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse(res,null)).build();
         }
     }
 
@@ -112,14 +110,14 @@ public class CourseController {
     @DELETE
     @Path("/delete/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteCourseById(@PathParam("id") Integer id, @HeaderParam("key") String token) {
+    public Response deleteCourseById(@PathParam("id") Integer id, @HeaderParam("token") String token) {
 
         String res =  courseService.deleteCourse(id, token);
 
         if(res.equals("ok")){
-            return Response.status(HttpStatus.SC_OK).entity(new MessageResponse("Se elimino con exito")).build();
+            return Response.status(HttpStatus.SC_OK).entity(new MessageResponse("Se elimino con exito",null)).build();
         }else{
-            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse(res)).build();
+            return Response.status(HttpStatus.SC_CONFLICT).entity(new MessageResponse(res,null)).build();
         }
 
 
